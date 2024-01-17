@@ -1,0 +1,48 @@
+- name: configuring nodejs
+  ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
+
+- name: Install nodejs
+  ansible.builtin.yum:
+    name: nodejs
+    state: installed
+
+- name: create application user
+  ansible.builtin.user:
+    name: "{{app_user}}"
+
+- name: Create application directory
+  ansible.builtin.file:
+    path: /app
+    state: directory
+
+
+- name: download application content
+  ansible.builtin.unarchive:
+    src: https://expense-artifacts.s3.amazonaws.com/backend.zip
+    dest: /app
+    remote_src: yes
+
+- name: Copy mysql repo file
+  ansible.builtin.copy:
+    src: mysql
+    dest: /etc/yum.repos.d/mysql.repo
+
+- name: Install mysql repo file
+  ansible.builtin.yum:
+    name: mysql.repo
+    state: installed
+
+- name: load schema
+  ansible.builtin.shell: mysql -h 172.31.47.34 -uroot -p"${mysql_root_password}" < /app/schema/backend.sql
+
+
+- name: Copy service file
+  ansible.builtin.copy:
+    src: backend.service
+    dest: /etc/systemd/system/backend.service
+
+- name: Restart systemd service
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: backend
