@@ -33,7 +33,7 @@
     state: installed
 
 - name: load schema
-  ansible.builtin.shell: mysql -h 172.31.47.34 -uroot -p"${mysql_root_password}" < /app/schema/backend.sql
+  ansible.builtin.shell: mysql -h dev-mysql.rdevopsb72.store -uroot -p"${mysql_root_password}" < /app/schema/backend.sql
 
 
 - name: Copy service file
